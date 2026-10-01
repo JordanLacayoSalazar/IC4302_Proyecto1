@@ -1,0 +1,1 @@
+-- aca deberian ir los sinonimos de procedimientos genreales o reutilizables
