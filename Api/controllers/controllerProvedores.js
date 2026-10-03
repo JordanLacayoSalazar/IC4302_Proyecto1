@@ -1,9 +1,33 @@
 const sql = require("mssql");
 
+const conectarBaseDatos = async () => {
+  if (!process.env.DB_CONFIG) {
+    const error = new Error(
+      "No se encontró DB_CONFIG. Verifique que Api/.env exista y contenga esa variable.",
+    );
+    error.connectionError = true;
+    throw error;
+  }
+
+  try {
+    return await sql.connect(process.env.DB_CONFIG);
+  } catch (error) {
+    error.connectionError = true;
+    throw error;
+  }
+};
+
+const responderError = (res, err) => {
+  res.status(500).json({
+    error: err.message,
+    connectionError: err.connectionError === true,
+  });
+};
+
 const getProveedores = async (req, res) => {
   try {
     const { nombre, categoriaId } = req.query;
-    const pool = await sql.connect(process.env.DB_CONFIG);
+    const pool = await conectarBaseDatos();
     const result = await pool
       .request()
       .input("NombreBusqueda", sql.NVarChar(100), nombre ? nombre : null)
@@ -11,20 +35,20 @@ const getProveedores = async (req, res) => {
       .execute("ObtenerProveedores");
     res.json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    responderError(res, err);
   }
 };
 
 const getProveedorById = async (req, res) => {
   try {
-    const pool = await sql.connect(process.env.DB_CONFIG);
+    const pool = await conectarBaseDatos();
     const result = await pool
       .request()
       .input("SupplierID", sql.Int, req.params.id)
       .execute("ObtenerDetalleProveedor");
     res.json(result.recordset[0]);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    responderError(res, err);
   }
 };
 
@@ -38,7 +62,7 @@ const crearProveedor = async (req, res) => {
       DeliveryCityID,
       SupplierReference,
     } = req.body;
-    const pool = await sql.connect(process.env.DB_CONFIG);
+    const pool = await conectarBaseDatos();
     await pool
       .request()
       .input("SupplierName", sql.NVarChar(100), SupplierName)
@@ -50,23 +74,23 @@ const crearProveedor = async (req, res) => {
       .execute("CrearProveedor");
     res.status(201).json({ message: "Proveedor creado exitosamente" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    responderError(res, err);
   }
 };
 
 const getCategoriasProveedor = async (req, res) => {
   try {
-    const pool = await sql.connect(process.env.DB_CONFIG);
+    const pool = await conectarBaseDatos();
     const result = await pool.request().execute("ObtenerCategoriasProveedor");
     res.json(result.recordset);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    responderError(res, err);
   }
 };
 
 const actualizarProveedor = async (req, res) => {
   try {
-    const pool = await sql.connect(process.env.DB_CONFIG);
+    const pool = await conectarBaseDatos();
     await pool
       .request()
       .input("SupplierID", sql.Int, req.params.id)
@@ -74,20 +98,20 @@ const actualizarProveedor = async (req, res) => {
       .execute("ActualizarProveedor");
     res.json({ message: "Proveedor actualizado" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    responderError(res, err);
   }
 };
 
 const eliminarProveedor = async (req, res) => {
   try {
-    const pool = await sql.connect(process.env.DB_CONFIG);
+    const pool = await conectarBaseDatos();
     await pool
       .request()
       .input("SupplierID", sql.Int, req.params.id)
       .execute("EliminarProveedor");
     res.json({ message: "Proveedor eliminado" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    responderError(res, err);
   }
 };
 

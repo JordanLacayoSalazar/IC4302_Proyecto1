@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   MenuItem,
@@ -31,7 +31,20 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import ModalDetallesProveedor from "./ModalDetallesProveedor";
 import ModalFormularioProveedor from "./ModalFormularioProveedor";
 
-export default function Proveedores() {
+const API_URL = "http://localhost:3000";
+
+const leerRespuesta = async (response, mensajeError) => {
+  const data = await response.json();
+  if (!response.ok) {
+    const mensaje = data.error || mensajeError;
+    const error = new Error(mensaje);
+    error.connectionError = data.connectionError !== false;
+    throw error;
+  }
+  return data;
+};
+
+export default function Proveedores({ onError, onConnectionError }) {
   const [proveedores, setProveedores] = useState([]);
 
   const [filtroNombre, setFiltroNombre] = useState("");
@@ -69,12 +82,27 @@ export default function Proveedores() {
 
   const [formData, setFormData] = useState(initialStateFormData);
 
+  const reportarError = (error) => {
+    const mensaje = error.message || String(error);
+    if (error.connectionError || error instanceof TypeError) {
+      onConnectionError(mensaje);
+    } else {
+      onError(mensaje);
+    }
+  };
+
   const fetchDatosRelacionales = async () => {
     try {
       const resCategorias = await fetch(
-        "http://localhost:3000/api/categorias-proveedores",
+        `${API_URL}/api/categorias-proveedores`,
       );
-      const dataCategorias = await resCategorias.json();
+      const dataCategorias = await leerRespuesta(
+        resCategorias,
+        "No se pudieron cargar las categorías.",
+      );
+      if (!Array.isArray(dataCategorias)) {
+        throw new Error("La respuesta de categorías no tiene el formato esperado.");
+      }
       setCategorias(dataCategorias);
 
       setContactos([
@@ -91,21 +119,28 @@ export default function Proveedores() {
       ]);
     } catch (error) {
       console.error("Error al cargar datos relacionales:", error);
+      reportarError(error);
     }
   };
 
   const fetchProveedores = async () => {
-    let url = `http://localhost:3000/api/proveedores?`;
+    let url = `${API_URL}/api/proveedores?`;
     if (filtroNombre) url += `nombre=${filtroNombre}&`;
     if (filtroCategoria) url += `categoriaId=${filtroCategoria}`;
 
     try {
       const response = await fetch(url);
-      const data = await response.json();
+      const data = await leerRespuesta(
+        response,
+        "No se pudieron cargar los proveedores.",
+      );
+      if (!Array.isArray(data)) {
+        throw new Error("La respuesta de proveedores no tiene el formato esperado.");
+      }
       setProveedores(data);
     } catch (error) {
       console.error("Error al cargar proveedores:", error);
-      setProveedores([]);
+      reportarError(error);
     }
   };
 
@@ -114,25 +149,39 @@ export default function Proveedores() {
     fetchDatosRelacionales();
   }, []);
 
-  const restaurarFiltros = () => {
+  const restaurarFiltros = async () => {
     setFiltroNombre("");
     setFiltroCategoria("");
-    fetch("http://localhost:3000/api/proveedores")
-      .then((res) => res.json())
-      .then((data) => setProveedores(data))
-      .catch((error) => console.error("Error al restaurar:", error));
+    try {
+      const response = await fetch(`${API_URL}/api/proveedores`);
+      const data = await leerRespuesta(
+        response,
+        "No se pudieron cargar los proveedores.",
+      );
+      if (!Array.isArray(data)) {
+        throw new Error("La respuesta de proveedores no tiene el formato esperado.");
+      }
+      setProveedores(data);
+    } catch (error) {
+      console.error("Error al restaurar:", error);
+      reportarError(error);
+    }
   };
 
   const abrirDetalles = async (id) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/proveedores/${id}`,
+        `${API_URL}/api/proveedores/${id}`,
       );
-      const data = await response.json();
+      const data = await leerRespuesta(
+        response,
+        "No se pudieron cargar los detalles del proveedor.",
+      );
       setProveedorSeleccionado(data);
       setModalDetallesAbierto(true);
     } catch (error) {
       console.error("Error al obtener detalles:", error);
+      reportarError(error);
     }
   };
 
@@ -176,20 +225,22 @@ export default function Proveedores() {
 
   const guardarProveedor = async () => {
     const url = modoEdicion
-      ? `http://localhost:3000/api/proveedores/${formData.SupplierID}`
-      : `http://localhost:3000/api/proveedores`;
+      ? `${API_URL}/api/proveedores/${formData.SupplierID}`
+      : `${API_URL}/api/proveedores`;
     const metodo = modoEdicion ? "PUT" : "POST";
 
     try {
-      await fetch(url, {
+      const response = await fetch(url, {
         method: metodo,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
+      await leerRespuesta(response, "No se pudo guardar el proveedor.");
       setModalFormAbierto(false);
-      fetchProveedores();
+      await fetchProveedores();
     } catch (error) {
       console.error("Error al guardar proveedor:", error);
+      reportarError(error);
     }
   };
 
@@ -198,12 +249,14 @@ export default function Proveedores() {
       window.confirm("¿Estás seguro de que deseas eliminar este proveedor?")
     ) {
       try {
-        await fetch(`http://localhost:3000/api/proveedores/${id}`, {
+        const response = await fetch(`${API_URL}/api/proveedores/${id}`, {
           method: "DELETE",
         });
-        fetchProveedores();
+        await leerRespuesta(response, "No se pudo eliminar el proveedor.");
+        await fetchProveedores();
       } catch (error) {
         console.error("Error al eliminar proveedor:", error);
+        reportarError(error);
       }
     }
   };
@@ -318,7 +371,7 @@ export default function Proveedores() {
               spacing={1}
               sx={{ alignItems: "center", mb: 2 }}
             >
-              <SearchIcon sx={{ color: "#2563eb", fontSize: 21 }} />
+              <SearchIcon sx={{ color: "#283972", fontSize: 21 }} />
               <Typography
                 variant="subtitle1"
                 sx={{ fontWeight: 700, color: "#1e293b" }}
@@ -385,6 +438,10 @@ export default function Proveedores() {
                   textTransform: "none",
                   fontWeight: 600,
                   boxShadow: "none",
+                  backgroundColor: "#284472",
+                  "&:hover": {
+                    backgroundColor: "#1c2f4d",
+                  },
                 }}
               >
                 Buscar
