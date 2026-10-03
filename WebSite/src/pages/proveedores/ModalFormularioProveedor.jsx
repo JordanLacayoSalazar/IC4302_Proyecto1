@@ -1,30 +1,23 @@
-import React from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Typography,
   Box,
-  IconButton,
   Button,
-  Stack,
   TextField,
   MenuItem,
   Autocomplete,
   Divider,
 } from "@mui/material";
 
-import BusinessIcon from "@mui/icons-material/Business";
-import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import CapturadorUbicacion from "./CapturadorUbicacion";
+import CapturadorUbicacion from "../../components/CapturadorUbicacion";
+import ModalInterfazBase from "../../components/ModalInterfazBase";
 
 export default function ModalFormularioProveedor({
   abierto,
   onClose,
   modoEdicion,
+  IconoCrear,
+  IconoEditar,
+  IconoModulo,
   formData,
   manejarCambioFormulario,
   manejarCambioAutocomplete,
@@ -36,61 +29,50 @@ export default function ModalFormularioProveedor({
   opcionesCiudades = [],
 }) {
   return (
-    <Dialog
-      open={abierto}
+    <ModalInterfazBase
+      abierto={abierto}
       onClose={onClose}
+      titulo={modoEdicion ? "Editar Proveedor" : "Crear Nuevo Proveedor"}
+      descripcion={
+        modoEdicion
+          ? "Modifica el nombre del proveedor"
+          : "Completa la información para registrar un proveedor"
+      }
+      Icono={modoEdicion ? IconoEditar : IconoCrear}
       maxWidth="md"
-      fullWidth
-      sx={{ "& .MuiDialog-paper": { borderRadius: 3, overflow: "hidden" } }}
-    >
-      <DialogTitle
-        sx={{
-          p: 0,
-          background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)",
-          color: "white",
-        }}
-      >
-        <Box
-          sx={{
-            px: 3,
-            py: 2.5,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-            {modoEdicion ? <EditIcon /> : <AddIcon />}
-            <Box sx={{ textAlign: "left" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                {modoEdicion ? "Editar Proveedor" : "Crear Nuevo Proveedor"}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{ color: "rgba(255,255,255,0.7)" }}
-              >
-                {modoEdicion
-                  ? "Modifica el nombre del proveedor"
-                  : "Completa la información para registrar un proveedor"}
-              </Typography>
-            </Box>
-          </Stack>
-          <IconButton
+      contenidoSx={{ p: { xs: 2, md: 4 } }}
+      acciones={
+        <>
+          <Button
             onClick={onClose}
+            variant="outlined"
             sx={{
-              color: "white",
-              "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+              borderColor: "#cbd5e1",
+              color: "#475569",
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent
-        dividers
-        sx={{ backgroundColor: "#f8fafc", p: { xs: 2, md: 4 } }}
-      >
+            Cancelar
+          </Button>
+          <Button
+            onClick={guardarProveedor}
+            variant="contained"
+            startIcon={<IconoModulo />}
+            sx={{
+              textTransform: "none",
+              borderRadius: 2,
+              fontWeight: 600,
+              px: 2.5,
+              boxShadow: "none",
+            }}
+          >
+            {modoEdicion ? "Guardar cambios" : "Crear proveedor"}
+          </Button>
+        </>
+      }
+    >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           <Box>
             <Typography
@@ -374,37 +356,6 @@ export default function ModalFormularioProveedor({
             </>
           )}
         </Box>
-      </DialogContent>
-
-      <DialogActions sx={{ px: 3, py: 2, backgroundColor: "white", gap: 1 }}>
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          sx={{
-            textTransform: "none",
-            borderRadius: 2,
-            fontWeight: 600,
-            borderColor: "#cbd5e1",
-            color: "#475569",
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={guardarProveedor}
-          variant="contained"
-          startIcon={<BusinessIcon />}
-          sx={{
-            textTransform: "none",
-            borderRadius: 2,
-            fontWeight: 600,
-            px: 2.5,
-            boxShadow: "none",
-          }}
-        >
-          {modoEdicion ? "Guardar cambios" : "Crear proveedor"}
-        </Button>
-      </DialogActions>
-    </Dialog>
+    </ModalInterfazBase>
   );
 }

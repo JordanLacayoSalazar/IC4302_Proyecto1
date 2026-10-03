@@ -27,24 +27,20 @@ import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import BusinessIcon from "@mui/icons-material/Business";
 import CategoryIcon from "@mui/icons-material/Category";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import AddBusinessIcon from "@mui/icons-material/AddBusiness";
 
 import ModalDetallesProveedor from "./ModalDetallesProveedor";
 import ModalFormularioProveedor from "./ModalFormularioProveedor";
+import ModuloInterfazBase from "../../components/ModuloInterfazBase";
+import PaginacionTabla, {
+  obtenerCantidadFilasVisibles,
+} from "../../components/PaginacionTabla";
+import {
+  API_URL,
+  mostrarError,
+} from "../../components/ModuloHerramientas";
 
-const API_URL = "http://localhost:3000";
-
-const leerRespuesta = async (response, mensajeError) => {
-  const data = await response.json();
-  if (!response.ok) {
-    const mensaje = data.error || mensajeError;
-    const error = new Error(mensaje);
-    error.connectionError = data.connectionError !== false;
-    throw error;
-  }
-  return data;
-};
-
-export default function Proveedores({ onError, onConnectionError }) {
+export default function Proveedores({ onErrorNotificacion, onErrorOcultarModulo }) {
   const [proveedores, setProveedores] = useState([]);
 
   const [filtroNombre, setFiltroNombre] = useState("");
@@ -60,6 +56,8 @@ export default function Proveedores({ onError, onConnectionError }) {
 
   const [modalFormAbierto, setModalFormAbierto] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
+  const [numPaginaActual, setNumPaginaActual] = useState(0);
+  const [cantidadFilasPorPagina, setCantidadFilasPorPagina] = useState(5);
 
   const initialStateFormData = {
     SupplierID: "",
@@ -82,24 +80,27 @@ export default function Proveedores({ onError, onConnectionError }) {
 
   const [formData, setFormData] = useState(initialStateFormData);
 
-  const reportarError = (error) => {
-    const mensaje = error.message || String(error);
-    if (error.connectionError || error instanceof TypeError) {
-      onConnectionError(mensaje);
-    } else {
-      onError(mensaje);
-    }
-  };
+  const proveedoresVisiblesArray = obtenerCantidadFilasVisibles(
+    proveedores,
+    numPaginaActual,
+    cantidadFilasPorPagina,
+  );
 
   const fetchDatosRelacionales = async () => {
     try {
       const resCategorias = await fetch(
         `${API_URL}/api/categorias-proveedores`,
       );
-      const dataCategorias = await leerRespuesta(
-        resCategorias,
-        "No se pudieron cargar las categorías.",
-      );
+      const dataCategorias = await resCategorias.json();
+
+      if (!resCategorias.ok) {
+        const error = new Error(
+          dataCategorias.errorMsg || "No se pudieron cargar las categorías.",
+        );
+        error.ocultarModulo = dataCategorias.esErrorCriticoBD;
+        throw error;
+      }
+
       if (!Array.isArray(dataCategorias)) {
         throw new Error("La respuesta de categorías no tiene el formato esperado.");
       }
@@ -119,7 +120,7 @@ export default function Proveedores({ onError, onConnectionError }) {
       ]);
     } catch (error) {
       console.error("Error al cargar datos relacionales:", error);
-      reportarError(error);
+      mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
     }
   };
 
@@ -130,17 +131,24 @@ export default function Proveedores({ onError, onConnectionError }) {
 
     try {
       const response = await fetch(url);
-      const data = await leerRespuesta(
-        response,
-        "No se pudieron cargar los proveedores.",
-      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        const error = new Error(
+          data.errorMsg || "No se pudieron cargar los proveedores.",
+        );
+        error.ocultarModulo = data.esErrorCriticoBD;
+        throw error;
+      }
+
       if (!Array.isArray(data)) {
         throw new Error("La respuesta de proveedores no tiene el formato esperado.");
       }
       setProveedores(data);
+      setNumPaginaActual(0);
     } catch (error) {
       console.error("Error al cargar proveedores:", error);
-      reportarError(error);
+      mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
     }
   };
 
@@ -154,17 +162,24 @@ export default function Proveedores({ onError, onConnectionError }) {
     setFiltroCategoria("");
     try {
       const response = await fetch(`${API_URL}/api/proveedores`);
-      const data = await leerRespuesta(
-        response,
-        "No se pudieron cargar los proveedores.",
-      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        const error = new Error(
+          data.errorMsg || "No se pudieron cargar los proveedores.",
+        );
+        error.ocultarModulo = data.esErrorCriticoBD;
+        throw error;
+      }
+
       if (!Array.isArray(data)) {
         throw new Error("La respuesta de proveedores no tiene el formato esperado.");
       }
       setProveedores(data);
+      setNumPaginaActual(0);
     } catch (error) {
       console.error("Error al restaurar:", error);
-      reportarError(error);
+      mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
     }
   };
 
@@ -173,15 +188,21 @@ export default function Proveedores({ onError, onConnectionError }) {
       const response = await fetch(
         `${API_URL}/api/proveedores/${id}`,
       );
-      const data = await leerRespuesta(
-        response,
-        "No se pudieron cargar los detalles del proveedor.",
-      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        const error = new Error(
+          data.errorMsg || "No se pudieron cargar los detalles del proveedor.",
+        );
+        error.ocultarModulo = data.esErrorCriticoBD;
+        throw error;
+      }
+
       setProveedorSeleccionado(data);
       setModalDetallesAbierto(true);
     } catch (error) {
       console.error("Error al obtener detalles:", error);
-      reportarError(error);
+      mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
     }
   };
 
@@ -235,12 +256,21 @@ export default function Proveedores({ onError, onConnectionError }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      await leerRespuesta(response, "No se pudo guardar el proveedor.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        const error = new Error(
+          data.errorMsg || "No se pudo guardar el proveedor.",
+        );
+        error.ocultarModulo = data.esErrorCriticoBD;
+        throw error;
+      }
+
       setModalFormAbierto(false);
       await fetchProveedores();
     } catch (error) {
       console.error("Error al guardar proveedor:", error);
-      reportarError(error);
+      mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
     }
   };
 
@@ -252,110 +282,34 @@ export default function Proveedores({ onError, onConnectionError }) {
         const response = await fetch(`${API_URL}/api/proveedores/${id}`, {
           method: "DELETE",
         });
-        await leerRespuesta(response, "No se pudo eliminar el proveedor.");
+        const data = await response.json();
+
+        if (!response.ok) {
+          const error = new Error(
+            data.errorMsg || "No se pudo eliminar el proveedor.",
+          );
+          error.ocultarModulo = data.esErrorCriticoBD;
+          throw error;
+        }
+
         await fetchProveedores();
       } catch (error) {
         console.error("Error al eliminar proveedor:", error);
-        reportarError(error);
+        mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
       }
     }
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        backgroundColor: "#f1f5f9",
-        p: { xs: 2, md: 4 },
-      }}
+    <ModuloInterfazBase
+      titulo="Gestión de Proveedores"
+      descripcion="Consulta, administra y controla los proveedores registrados"
+      Icono={BusinessIcon}
+      IconoBoton={AddIcon}
+      textoBoton="Nuevo Proveedor"
+      onCrear={abrirFormularioNuevo}
     >
-      <Paper
-        elevation={0}
-        sx={{
-          maxWidth: 1400,
-          mx: "auto",
-          borderRadius: 4,
-          overflow: "hidden",
-          border: "1px solid #e2e8f0",
-          backgroundColor: "#ffffff",
-        }}
-      >
-        <Box
-          sx={{
-            px: { xs: 3, md: 4 },
-            py: 3,
-            background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)",
-            color: "white",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: "space-between",
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: 2,
-            }}
-          >
-            <Box>
-              <Stack
-                direction="row"
-                spacing={1.5}
-                sx={{ alignItems: "center" }}
-              >
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 2.5,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "rgba(255,255,255,0.12)",
-                  }}
-                >
-                  <BusinessIcon />
-                </Box>
-                <Box>
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      fontWeight: 700,
-                      fontSize: { xs: "1.6rem", md: "2rem" },
-                    }}
-                  >
-                    Gestión de Proveedores
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "rgba(255,255,255,0.72)", mt: 0.3 }}
-                  >
-                    Consulta, administra y controla los proveedores registrados
-                  </Typography>
-                </Box>
-              </Stack>
-            </Box>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={abrirFormularioNuevo}
-              sx={{
-                backgroundColor: "#22c55e",
-                color: "white",
-                fontWeight: 700,
-                px: 2.5,
-                py: 1.2,
-                borderRadius: 2.5,
-                textTransform: "none",
-                boxShadow: "none",
-                "&:hover": { backgroundColor: "#16a34a", boxShadow: "none" },
-              }}
-            >
-              Nuevo Proveedor
-            </Button>
-          </Box>
-        </Box>
-
+      <>
         <Box sx={{ p: { xs: 2.5, md: 3 } }}>
           <Paper
             elevation={0}
@@ -532,7 +486,7 @@ export default function Proveedores({ onError, onConnectionError }) {
                 </TableHead>
                 <TableBody>
                   {Array.isArray(proveedores) && proveedores.length > 0 ? (
-                    proveedores.map((row) => (
+                    proveedoresVisiblesArray.map((row) => (
                       <TableRow
                         key={row.SupplierID}
                         hover
@@ -689,30 +643,41 @@ export default function Proveedores({ onError, onConnectionError }) {
                 </TableBody>
               </Table>
             </TableContainer>
+            <PaginacionTabla
+              cantidadTotalFilas={proveedores.length}
+              numPaginaActual={numPaginaActual}
+              cantidadFilasPorPagina={cantidadFilasPorPagina}
+              setNumPaginaActual={setNumPaginaActual}
+              setCantidadFilasPorPagina={setCantidadFilasPorPagina}
+              onCambiarPagina={(_, nuevaPagina) => setNumPaginaActual(nuevaPagina)}
+            />
           </Box>
         </Box>
-      </Paper>
 
-      <ModalDetallesProveedor
-        abierto={modalDetallesAbierto}
-        onClose={() => setModalDetallesAbierto(false)}
-        proveedor={proveedorSeleccionado}
-      />
+        <ModalDetallesProveedor
+          abierto={modalDetallesAbierto}
+          onClose={() => setModalDetallesAbierto(false)}
+          proveedor={proveedorSeleccionado}
+        />
 
-      <ModalFormularioProveedor
-        abierto={modalFormAbierto}
-        onClose={() => setModalFormAbierto(false)}
-        modoEdicion={modoEdicion}
-        formData={formData}
-        manejarCambioFormulario={manejarCambioFormulario}
-        manejarCambioAutocomplete={manejarCambioAutocomplete}
-        manejarUbicacionCapturada={manejarUbicacionCapturada}
-        guardarProveedor={guardarProveedor}
-        opcionesCategorias={categorias}
-        opcionesContactos={contactos}
-        opcionesMetodosEntrega={metodosEntrega}
-        opcionesCiudades={ciudades}
-      />
-    </Box>
+        <ModalFormularioProveedor
+          abierto={modalFormAbierto}
+          onClose={() => setModalFormAbierto(false)}
+          modoEdicion={modoEdicion}
+          IconoCrear={BusinessIcon}
+          IconoEditar={EditIcon}
+          IconoModulo={AddBusinessIcon}
+          formData={formData}
+          manejarCambioFormulario={manejarCambioFormulario}
+          manejarCambioAutocomplete={manejarCambioAutocomplete}
+          manejarUbicacionCapturada={manejarUbicacionCapturada}
+          guardarProveedor={guardarProveedor}
+          opcionesCategorias={categorias}
+          opcionesContactos={contactos}
+          opcionesMetodosEntrega={metodosEntrega}
+          opcionesCiudades={ciudades}
+        />
+      </>
+    </ModuloInterfazBase>
   );
 }

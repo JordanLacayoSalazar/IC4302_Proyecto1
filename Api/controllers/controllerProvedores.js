@@ -1,27 +1,12 @@
-const sql = require("mssql");
+const { sql, conectarBaseDatos, manejarError } = require("../utilidades");
 
-const conectarBaseDatos = async () => {
-  if (!process.env.DB_CONFIG) {
-    const error = new Error(
-      "No se encontró DB_CONFIG. Verifique que Api/.env exista y contenga esa variable.",
-    );
-    error.connectionError = true;
-    throw error;
-  }
-
+const getVerificarConexionBD = async (req, res) => {
   try {
-    return await sql.connect(process.env.DB_CONFIG);
-  } catch (error) {
-    error.connectionError = true;
-    throw error;
+    await conectarBaseDatos();
+    res.json({ conectado: true });
+  } catch (err) {
+    manejarError(res, err);
   }
-};
-
-const responderError = (res, err) => {
-  res.status(500).json({
-    error: err.message,
-    connectionError: err.connectionError === true,
-  });
 };
 
 const getProveedores = async (req, res) => {
@@ -35,7 +20,7 @@ const getProveedores = async (req, res) => {
       .execute("ObtenerProveedores");
     res.json(result.recordset);
   } catch (err) {
-    responderError(res, err);
+    manejarError(res, err);
   }
 };
 
@@ -48,7 +33,7 @@ const getProveedorById = async (req, res) => {
       .execute("ObtenerDetalleProveedor");
     res.json(result.recordset[0]);
   } catch (err) {
-    responderError(res, err);
+    manejarError(res, err);
   }
 };
 
@@ -74,7 +59,7 @@ const crearProveedor = async (req, res) => {
       .execute("CrearProveedor");
     res.status(201).json({ message: "Proveedor creado exitosamente" });
   } catch (err) {
-    responderError(res, err);
+    manejarError(res, err);
   }
 };
 
@@ -84,7 +69,7 @@ const getCategoriasProveedor = async (req, res) => {
     const result = await pool.request().execute("ObtenerCategoriasProveedor");
     res.json(result.recordset);
   } catch (err) {
-    responderError(res, err);
+    manejarError(res, err);
   }
 };
 
@@ -98,7 +83,7 @@ const actualizarProveedor = async (req, res) => {
       .execute("ActualizarProveedor");
     res.json({ message: "Proveedor actualizado" });
   } catch (err) {
-    responderError(res, err);
+    manejarError(res, err);
   }
 };
 
@@ -111,11 +96,12 @@ const eliminarProveedor = async (req, res) => {
       .execute("EliminarProveedor");
     res.json({ message: "Proveedor eliminado" });
   } catch (err) {
-    responderError(res, err);
+    manejarError(res, err);
   }
 };
 
 module.exports = {
+  getVerificarConexionBD,
   getProveedores,
   getProveedorById,
   getCategoriasProveedor,

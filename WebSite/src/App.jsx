@@ -8,7 +8,10 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import LogoutIcon from "@mui/icons-material/Logout";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
-import Proveedores from "./components/Proveedores";
+import Proveedores from "./pages/proveedores/Proveedores";
+import Clientes from "./pages/clientes/Clientes";
+import { verificarConexionBD } from "./components/ModuloHerramientas";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import "./App.css";
 
 const modulos = [
@@ -16,28 +19,28 @@ const modulos = [
     id: "clientes",
     numero: "01",
     nombre: "Clientes",
-    descripcion: "Consulta y administra la información de los clientes.",
+    descripcion: "Gestiona y consulta la información de los clientes registrados, sus contactos, direcciones, métodos de entrega y datos de facturación.",
     Icono: GroupsOutlinedIcon,
   },
   {
     id: "proveedores",
     numero: "02",
     nombre: "Proveedores",
-    descripcion: "Gestiona proveedores, contactos y datos de entrega.",
+    descripcion: "Administra y consulta los proveedores, incluyendo sus datos de contacto, direcciones, métodos de entrega e información bancaria.",
     Icono: LocalShippingOutlinedIcon,
   },
   {
     id: "inventarios",
     numero: "03",
     nombre: "Inventarios",
-    descripcion: "Explora productos, existencias y detalles de inventario.",
+    descripcion: "Consulta y gestiona los productos disponibles, sus características, precios, proveedores, existencias y ubicaciones.",
     Icono: Inventory2OutlinedIcon,
   },
   {
     id: "ventas",
     numero: "04",
     nombre: "Ventas",
-    descripcion: "Consulta facturas, clientes y detalle de ventas.",
+    descripcion: "Consulta y gestiona las ventas realizadas, facturas, clientes, productos, cantidades, impuestos y totales.",
     Icono: AttachMoneyIcon,
   },
 ];
@@ -45,20 +48,31 @@ const modulos = [
 const reportes = {
   id: "reportes",
   nombre: "Reportes estadisticos",
-  descripcion: "Indicadores, tendencias y resumenes del negocio.",
+  descripcion: "Analiza las compras, ventas, inventarios y principales indicadores mediante reportes y consultas estadísticas.",
   Icono: QueryStatsOutlinedIcon,
 };
 
 function App() {
   const [moduloActual, setmoduloActual] = useState(null);
-  const [errorModulo, setErrorModulo] = useState("");
-  const [errorConexion, setErrorConexion] = useState("");
+  const [ErrorNotificacion, setErrorNotificacion] = useState("");
+  const [ErrorOcultarModulo, setErrorOcultarModulo] = useState("");
+  const [verificandoConexion, setVerificandoConexion] = useState(false);
   let contenido;
 
-  const abrirModulo = (id) => {
-    setErrorModulo("");
-    setErrorConexion("");
+  const abrirModulo = async (id) => {
+    setErrorNotificacion("");
+    setErrorOcultarModulo("");
     setmoduloActual(id);
+    setVerificandoConexion(true);
+
+    try {
+      await verificarConexionBD();
+    } catch (error) {
+      const mensaje = error.message || String(error);
+      setErrorOcultarModulo(mensaje);
+    } finally {
+      setVerificandoConexion(false);
+    }
   };
 
   if (moduloActual === null) {
@@ -122,12 +136,12 @@ function App() {
   } else {
     let contenidoModulo = null;
 
-    if (errorConexion) {
+    if (ErrorOcultarModulo) {
       contenido = (
         <section className="pantalla-error-conexion">
           <div className="cuadro-error-conexion" role="alert">
             <h1>Error al acceder a la base de datos</h1>
-            <p>Mensaje de error: {errorConexion}</p>
+            <p>Mensaje de error: {ErrorOcultarModulo}</p>
             <div className="causas-error">
               <p>
                 <strong>Posibles causas:</strong>
@@ -141,8 +155,8 @@ function App() {
             <button
               className="boton-volver"
               onClick={() => {
-                setErrorModulo("");
-                setErrorConexion("");
+                setErrorNotificacion("");
+                setErrorOcultarModulo("");
                 setmoduloActual(null);
               }}
               type="button"
@@ -153,14 +167,35 @@ function App() {
           </div>
         </section>
       );
+    } else if (verificandoConexion) {
+      contenido = (
+        <section className="contenido-modulo">
+          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <CircularProgress size={24} />
+              <Typography>Verificando conexión con la base de datos...</Typography>
+            </Box>
+          </Box>
+        </section>
+      );
     } else {
       if (moduloActual === "proveedores") {
         contenidoModulo = (
           <Proveedores
-            onError={setErrorModulo}
-            onConnectionError={(mensaje) => {
-              setErrorModulo("");
-              setErrorConexion(mensaje);
+            onErrorNotificacion={setErrorNotificacion}
+            onErrorOcultarModulo={(mensaje) => {
+              setErrorNotificacion("");
+              setErrorOcultarModulo(mensaje);
+            }}
+          />
+        );
+      } else if (moduloActual === "clientes") {
+        contenidoModulo = (
+          <Clientes
+            onErrorNotificacion={setErrorNotificacion}
+            onErrorOcultarModulo={(mensaje) => {
+              setErrorNotificacion("");
+              setErrorOcultarModulo(mensaje);
             }}
           />
         );
@@ -171,8 +206,8 @@ function App() {
           <button
             className="boton-volver"
             onClick={() => {
-              setErrorModulo("");
-              setErrorConexion("");
+              setErrorNotificacion("");
+              setErrorOcultarModulo("");
               setmoduloActual(null);
             }}
             type="button"
@@ -191,17 +226,17 @@ function App() {
       {contenido}
       <Snackbar
         autoHideDuration={10000}
-        onClose={() => setErrorModulo("")}
-        open={Boolean(errorModulo)}
+        onClose={() => setErrorNotificacion("")}
+        open={Boolean(ErrorNotificacion)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
-          onClose={() => setErrorModulo("")}
+          onClose={() => setErrorNotificacion("")}
           severity="error"
           variant="filled"
           sx={{ maxWidth: "90vw", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
         >
-          {errorModulo}
+          {ErrorNotificacion}
         </Alert>
       </Snackbar>
     </main>

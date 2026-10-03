@@ -1,20 +1,12 @@
-import React from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Typography,
   Box,
-  IconButton,
   Divider,
   Button,
-  Stack,
 } from "@mui/material";
 
 import BusinessIcon from "@mui/icons-material/Business";
 import CategoryIcon from "@mui/icons-material/Category";
-import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIcon from "@mui/icons-material/Phone";
 import LocationCityIcon from "@mui/icons-material/LocationCity";
@@ -22,7 +14,8 @@ import LanguageIcon from "@mui/icons-material/Language";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import CampoDetalle from "./CampoDetalle";
+import CampoDetalle from "../../components/CampoDetalle";
+import ModalInterfazBase from "../../components/ModalInterfazBase";
 
 export default function ModalDetallesProveedor({
   abierto,
@@ -32,61 +25,24 @@ export default function ModalDetallesProveedor({
   if (!proveedor) return null;
 
   return (
-    <Dialog
-      open={abierto}
+    <ModalInterfazBase
+      abierto={abierto}
       onClose={onClose}
+      titulo="Detalles del Proveedor"
+      descripcion="Información completa del proveedor"
+      Icono={BusinessIcon}
       maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: { borderRadius: 3, overflow: "hidden" },
-      }}
-    >
-      <DialogTitle
-        sx={{
-          p: 0,
-          background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)",
-          color: "white",
-        }}
-      >
-        <Box
-          sx={{
-            px: 3,
-            py: 2.5,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+      contenidoSx={{ p: { xs: 2, md: 3 } }}
+      acciones={
+        <Button
+          onClick={onClose}
+          variant="outlined"
+          sx={{ textTransform: "none", borderRadius: 2, fontWeight: 600 }}
         >
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-            <BusinessIcon />
-            <Box sx={{ textAlign: "left" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                Detalles del Proveedor
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{ color: "rgba(255,255,255,0.7)" }}
-              >
-                Información completa del proveedor
-              </Typography>
-            </Box>
-          </Stack>
-          <IconButton
-            onClick={onClose}
-            sx={{
-              color: "white",
-              "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent
-        dividers
-        sx={{ backgroundColor: "#f8fafc", p: { xs: 2, md: 3 } }}
-      >
+          Cerrar
+        </Button>
+      }
+    >
         <Box>
           <Typography
             variant="subtitle1"
@@ -247,17 +203,6 @@ export default function ModalDetallesProveedor({
             />
           </Box>
         </Box>
-      </DialogContent>
-
-      <DialogActions sx={{ px: 3, py: 2, backgroundColor: "white" }}>
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          sx={{ textTransform: "none", borderRadius: 2, fontWeight: 600 }}
-        >
-          Cerrar
-        </Button>
-      </DialogActions>
-    </Dialog>
+    </ModalInterfazBase>
   );
 }
