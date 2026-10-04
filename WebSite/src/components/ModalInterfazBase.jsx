@@ -27,7 +27,7 @@ export default function ModalInterfazBase({
       onClose={onClose}
       maxWidth={maxWidth}
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3, overflow: "hidden" } }}
+      sx={{ borderRadius: 3, overflow: "hidden" }}
     >
       <DialogTitle
         sx={{
@@ -53,10 +53,10 @@ export default function ModalInterfazBase({
               </Typography>
 
               <Typography
-                  variant="caption"
-                  sx={{ color: "rgba(255,255,255,0.7)" }}
+                variant="caption"
+                sx={{ color: "rgba(255,255,255,0.7)" }}
               >
-                  {descripcion}
+                {descripcion}
               </Typography>
             </Box>
           </Stack>

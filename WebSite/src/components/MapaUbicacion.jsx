@@ -18,12 +18,9 @@ const obtenerEnlaceMapa = (latitud, longitud, margen) => {
   const minLatitud = Math.max(-90, latitud - margen);
   const maxLongitud = Math.min(180, longitud + margen);
   const maxLatitud = Math.min(90, latitud + margen);
-  const limites = [
-    minLongitud,
-    minLatitud,
-    maxLongitud,
-    maxLatitud,
-  ].join("%2C");
+  const limites = [minLongitud, minLatitud, maxLongitud, maxLatitud].join(
+    "%2C",
+  );
 
   return `https://www.openstreetmap.org/export/embed.html?bbox=${limites}&layer=mapnik&marker=${latitud}%2C${longitud}`;
 };

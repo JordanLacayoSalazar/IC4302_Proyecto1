@@ -35,11 +35,7 @@ const obtenerEnlaceSitioWeb = (sitioWeb) => {
   return enlace.href;
 };
 
-export default function ModalDetallesCliente({
-  abierto,
-  onClose,
-  cliente,
-}) {
+export default function ModalDetallesCliente({ abierto, onClose, cliente }) {
   if (!cliente) {
     return null;
   }

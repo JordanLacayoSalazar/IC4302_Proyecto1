@@ -26,14 +26,14 @@ import ModuloInterfazBase from "../../components/ModuloInterfazBase";
 import PaginacionTabla, {
   obtenerCantidadFilasVisibles,
 } from "../../components/PaginacionTabla";
-import {
-  API_URL,
-  mostrarError,
-} from "../../components/ModuloHerramientas";
+import { API_URL, mostrarError } from "../../components/ModuloHerramientas";
 import ModalFormularioCliente from "./ModalFormularioCliente";
 import ModalDetallesCliente from "./ModalDetallesCliente";
 
-export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) {
+export default function Clientes({
+  onErrorNotificacion,
+  onErrorOcultarModulo,
+}) {
   const [clientes, setClientes] = useState([]);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
@@ -46,34 +46,45 @@ export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) 
   const [pagina, setPagina] = useState(0);
   const [cantidadFilasPorPagina, setCantidadFilasPorPagina] = useState(5);
 
-  const clientesVisibles = obtenerCantidadFilasVisibles(clientes, pagina, cantidadFilasPorPagina);
+  const clientesVisibles = obtenerCantidadFilasVisibles(
+    clientes,
+    pagina,
+    cantidadFilasPorPagina,
+  );
 
-  const fetchClientes = useCallback(async (nombre = filtroNombre) => {
-    const parametros = new URLSearchParams();
-    if (nombre.trim()) parametros.set("nombre", nombre.trim());
+  const fetchClientes = useCallback(
+    async (nombre = filtroNombre) => {
+      const parametros = new URLSearchParams();
+      if (nombre.trim()) parametros.set("nombre", nombre.trim());
 
-    try {
-      const respuesta = await fetch(`${API_URL}/api/clientes?${parametros.toString()}`);
-      const resultado = await respuesta.json();
-
-      if (!respuesta.ok) {
-        const error = new Error(
-          resultado.errorMsg || "No se pudieron cargar los clientes.",
+      try {
+        const respuesta = await fetch(
+          `${API_URL}/api/clientes?${parametros.toString()}`,
         );
-        error.ocultarModulo = resultado.esErrorCriticoBD;
-        throw error;
-      }
+        const resultado = await respuesta.json();
 
-      if (!Array.isArray(resultado)) {
-        throw new Error("La respuesta de clientes no tiene el formato esperado.");
+        if (!respuesta.ok) {
+          const error = new Error(
+            resultado.errorMsg || "No se pudieron cargar los clientes.",
+          );
+          error.ocultarModulo = resultado.esErrorCriticoBD;
+          throw error;
+        }
+
+        if (!Array.isArray(resultado)) {
+          throw new Error(
+            "La respuesta de clientes no tiene el formato esperado.",
+          );
+        }
+        setClientes(resultado);
+        setPagina(0);
+      } catch (error) {
+        console.error("Error al cargar clientes:", error);
+        mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
       }
-      setClientes(resultado);
-      setPagina(0);
-    } catch (error) {
-      console.error("Error al cargar clientes:", error);
-      mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
-    }
-  }, [filtroNombre, onErrorNotificacion, onErrorOcultarModulo]);
+    },
+    [filtroNombre, onErrorNotificacion, onErrorOcultarModulo],
+  );
 
   const fetchOpcionesFormulario = useCallback(async () => {
     try {
@@ -82,7 +93,8 @@ export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) 
 
       if (!respuesta.ok) {
         const error = new Error(
-          resultado.errorMsg || "No se pudieron cargar las opciones de clientes.",
+          resultado.errorMsg ||
+            "No se pudieron cargar las opciones de clientes.",
         );
         error.ocultarModulo = resultado.esErrorCriticoBD;
         throw error;
@@ -104,7 +116,9 @@ export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) 
 
   const abrirFormularioEdicion = async (cliente) => {
     try {
-      const respuesta = await fetch(`${API_URL}/api/clientes/${cliente.CustomerID}`);
+      const respuesta = await fetch(
+        `${API_URL}/api/clientes/${cliente.CustomerID}`,
+      );
       const detalle = await respuesta.json();
 
       if (!respuesta.ok) {
@@ -164,7 +178,10 @@ export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) 
       "DeliveryMethodID",
       "DeliveryCityID",
     ];
-    if (evento.target.type === "number" || camposId.includes(evento.target.name)) {
+    if (
+      evento.target.type === "number" ||
+      camposId.includes(evento.target.name)
+    ) {
       if (valor === "") {
         valor = null;
       } else {
@@ -382,9 +399,16 @@ export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) 
             backgroundColor: "#f8fafc",
           }}
         >
-          <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 2 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: "center", mb: 2 }}
+          >
             <SearchIcon sx={{ color: "#283972", fontSize: 21 }} />
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: "#1e293b" }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ fontWeight: 700, color: "#1e293b" }}
+            >
               Buscar clientes
             </Typography>
           </Stack>
@@ -455,7 +479,10 @@ export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) 
           <Typography variant="h6" sx={{ fontWeight: 700, color: "#0f172a" }}>
             Clientes registrados
           </Typography>
-          <Typography variant="body2" sx={{ color: "#64748b", mt: 0.3, mb: 1.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "#64748b", mt: 0.3, mb: 1.5 }}
+          >
             {textoCantidadClientes}
           </Typography>
           <TableContainer
@@ -479,14 +506,15 @@ export default function Clientes({ onErrorNotificacion, onErrorOcultarModulo }) 
                   <TableCell sx={{ fontWeight: 700, color: "#475569" }}>
                     MÉTODO DE ENTREGA
                   </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700, color: "#475569" }}>
+                  <TableCell
+                    align="center"
+                    sx={{ fontWeight: 700, color: "#475569" }}
+                  >
                     ACCIONES
                   </TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {filasClientes}
-              </TableBody>
+              <TableBody>{filasClientes}</TableBody>
             </Table>
           </TableContainer>
           <PaginacionTabla

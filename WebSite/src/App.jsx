@@ -2,7 +2,7 @@ import { useState } from "react";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -10,6 +10,8 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import Proveedores from "./pages/proveedores/Proveedores";
 import Clientes from "./pages/clientes/Clientes";
+import Inventario from "./pages/inventario/Inventario";
+import Reportes from "./pages/reportes/Reportes";
 import { verificarConexionBD } from "./components/ModuloHerramientas";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import "./App.css";
@@ -19,28 +21,32 @@ const modulos = [
     id: "clientes",
     numero: "01",
     nombre: "Clientes",
-    descripcion: "Gestiona y consulta la información de los clientes registrados, sus contactos, direcciones, métodos de entrega y datos de facturación.",
+    descripcion:
+      "Gestiona y consulta la información de los clientes registrados, sus contactos, direcciones, métodos de entrega y datos de facturación.",
     Icono: GroupsOutlinedIcon,
   },
   {
     id: "proveedores",
     numero: "02",
     nombre: "Proveedores",
-    descripcion: "Administra y consulta los proveedores, incluyendo sus datos de contacto, direcciones, métodos de entrega e información bancaria.",
+    descripcion:
+      "Administra y consulta los proveedores, incluyendo sus datos de contacto, direcciones, métodos de entrega e información bancaria.",
     Icono: LocalShippingOutlinedIcon,
   },
   {
     id: "inventarios",
     numero: "03",
     nombre: "Inventarios",
-    descripcion: "Consulta y gestiona los productos disponibles, sus características, precios, proveedores, existencias y ubicaciones.",
+    descripcion:
+      "Consulta y gestiona los productos disponibles, sus características, precios, proveedores, existencias y ubicaciones.",
     Icono: Inventory2OutlinedIcon,
   },
   {
     id: "ventas",
     numero: "04",
     nombre: "Ventas",
-    descripcion: "Consulta y gestiona las ventas realizadas, facturas, clientes, productos, cantidades, impuestos y totales.",
+    descripcion:
+      "Consulta y gestiona las ventas realizadas, facturas, clientes, productos, cantidades, impuestos y totales.",
     Icono: AttachMoneyIcon,
   },
 ];
@@ -48,7 +54,8 @@ const modulos = [
 const reportes = {
   id: "reportes",
   nombre: "Reportes estadisticos",
-  descripcion: "Analiza las compras, ventas, inventarios y principales indicadores mediante reportes y consultas estadísticas.",
+  descripcion:
+    "Analiza las compras, ventas, inventarios y principales indicadores mediante reportes y consultas estadísticas.",
   Icono: QueryStatsOutlinedIcon,
 };
 
@@ -122,9 +129,7 @@ function App() {
           </span>
           <span className="contenido-reportes">
             <span className="titulo-reportes">{reportes.nombre}</span>
-            <span className="descripcion-reportes">
-              {reportes.descripcion}
-            </span>
+            <span className="descripcion-reportes">{reportes.descripcion}</span>
           </span>
           <span aria-hidden="true" className="accion-reportes">
             Ver reportes
@@ -148,8 +153,8 @@ function App() {
               </p>
               <p>• Verifique que la API esté en ejecución.</p>
               <p>
-                • Verifique la configuración del archivo .env en la carpeta
-                Api para conectarse a SQL Server.
+                • Verifique la configuración del archivo .env en la carpeta Api
+                para conectarse a SQL Server.
               </p>
             </div>
             <button
@@ -173,7 +178,9 @@ function App() {
           <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <CircularProgress size={24} />
-              <Typography>Verificando conexión con la base de datos...</Typography>
+              <Typography>
+                Verificando conexión con la base de datos...
+              </Typography>
             </Box>
           </Box>
         </section>
@@ -192,6 +199,26 @@ function App() {
       } else if (moduloActual === "clientes") {
         contenidoModulo = (
           <Clientes
+            onErrorNotificacion={setErrorNotificacion}
+            onErrorOcultarModulo={(mensaje) => {
+              setErrorNotificacion("");
+              setErrorOcultarModulo(mensaje);
+            }}
+          />
+        );
+      } else if (moduloActual === "inventarios") {
+        contenidoModulo = (
+          <Inventario
+            onErrorNotificacion={setErrorNotificacion}
+            onErrorOcultarModulo={(mensaje) => {
+              setErrorNotificacion("");
+              setErrorOcultarModulo(mensaje);
+            }}
+          />
+        );
+      } else if (moduloActual === "reportes") {
+        contenidoModulo = (
+          <Reportes
             onErrorNotificacion={setErrorNotificacion}
             onErrorOcultarModulo={(mensaje) => {
               setErrorNotificacion("");
@@ -234,7 +261,11 @@ function App() {
           onClose={() => setErrorNotificacion("")}
           severity="error"
           variant="filled"
-          sx={{ maxWidth: "90vw", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}
+          sx={{
+            maxWidth: "90vw",
+            whiteSpace: "pre-wrap",
+            overflowWrap: "anywhere",
+          }}
         >
           {ErrorNotificacion}
         </Alert>

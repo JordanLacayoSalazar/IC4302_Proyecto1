@@ -73,7 +73,11 @@ const camposRelacionados = [
 const camposContacto = [
   { nombre: "PhoneNumber", etiqueta: "Teléfono" },
   { nombre: "FaxNumber", etiqueta: "Fax" },
-  { nombre: "PaymentDays", etiqueta: "Días de gracia para pagar", tipo: "number" },
+  {
+    nombre: "PaymentDays",
+    etiqueta: "Días de gracia para pagar",
+    tipo: "number",
+  },
   { nombre: "WebsiteURL", etiqueta: "Sitio web", tipo: "url" },
 ];
 
@@ -123,8 +127,7 @@ export default function ModalFormularioCliente({
     if (!modoEdicion) {
       faltaRelacionObligatoria = camposRelacionados.some(
         (campo) =>
-          campo.requerido &&
-          !String(formData[campo.nombre] ?? "").trim(),
+          campo.requerido && !String(formData[campo.nombre] ?? "").trim(),
       );
     }
 

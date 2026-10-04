@@ -17,9 +17,17 @@ export const verificarConexionBD = async () => {
   }
 };
 
-export const mostrarError = (error, onErrorNotificacion, onErrorOcultarModulo) => {
+export const mostrarError = (
+  error,
+  onErrorNotificacion,
+  onErrorOcultarModulo,
+) => {
   const mensaje = error.message || String(error);
-  if (error.ocultarModulo || error instanceof TypeError) {
+  if (
+    error.ocultarModulo ||
+    error.esErrorCriticoBD ||
+    error instanceof TypeError
+  ) {
     onErrorOcultarModulo(mensaje);
   } else {
     onErrorNotificacion(mensaje);

@@ -1,9 +1,4 @@
-import {
-  Typography,
-  Box,
-  Divider,
-  Button,
-} from "@mui/material";
+import { Typography, Box, Divider, Button, Link } from "@mui/material";
 
 import BusinessIcon from "@mui/icons-material/Business";
 import CategoryIcon from "@mui/icons-material/Category";
@@ -14,6 +9,9 @@ import LanguageIcon from "@mui/icons-material/Language";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import MapaUbicacion from "../../components/MapaUbicacion";
+
 import CampoDetalle from "../../components/CampoDetalle";
 import ModalInterfazBase from "../../components/ModalInterfazBase";
 
@@ -43,166 +41,225 @@ export default function ModalDetallesProveedor({
         </Button>
       }
     >
-        <Box>
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 700,
-              color: "#1e293b",
-              mb: 1.5,
-              textAlign: "left",
-            }}
-          >
-            Información general
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-              gap: 1.5,
-              mb: 3,
-            }}
-          >
-            <CampoDetalle
-              icono={<BusinessIcon fontSize="small" />}
-              etiqueta="Código"
-              valor={proveedor.CodigoProveedor}
-            />
-            <CampoDetalle
-              icono={<BusinessIcon fontSize="small" />}
-              etiqueta="Nombre"
-              valor={proveedor.NombreProveedor}
-            />
-            <CampoDetalle
-              icono={<CategoryIcon fontSize="small" />}
-              etiqueta="Categoría"
-              valor={proveedor.Categoria}
-            />
-            <CampoDetalle
-              icono={<PaymentsIcon fontSize="small" />}
-              etiqueta="Días de gracia"
-              valor={proveedor.DiasGracia}
-            />
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 700,
-              color: "#1e293b",
-              mb: 1.5,
-              textAlign: "left",
-            }}
-          >
-            Información de contacto
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-              gap: 1.5,
-              mb: 3,
-            }}
-          >
-            <CampoDetalle
-              icono={<PersonIcon fontSize="small" />}
-              etiqueta="Contacto primario"
-              valor={proveedor.ContactoPrimario}
-            />
-            <CampoDetalle
-              icono={<PersonIcon fontSize="small" />}
-              etiqueta="Contacto alternativo"
-              valor={proveedor.ContactoAlternativo}
-            />
-            <CampoDetalle
-              icono={<PhoneIcon fontSize="small" />}
-              etiqueta="Teléfono"
-              valor={proveedor.Telefono}
-            />
-            <CampoDetalle
-              icono={<LanguageIcon fontSize="small" />}
-              etiqueta="Sitio web"
-              valor={proveedor.SitioWeb}
-            />
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 700,
-              color: "#1e293b",
-              mb: 1.5,
-              textAlign: "left",
-            }}
-          >
-            Información de entrega
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-              gap: 1.5,
-              mb: 3,
-            }}
-          >
-            <CampoDetalle
-              icono={<LocalShippingIcon fontSize="small" />}
-              etiqueta="Método de entrega"
-              valor={proveedor.MetodoEntrega}
-            />
-            <CampoDetalle
-              icono={<LocationCityIcon fontSize="small" />}
-              etiqueta="Ciudad de entrega"
-              valor={proveedor.CiudadEntrega}
-            />
-            <CampoDetalle
-              icono={<LocationCityIcon fontSize="small" />}
-              etiqueta="Código postal"
-              valor={proveedor.CodigoPostal}
-            />
-            <CampoDetalle
-              icono={<LocationCityIcon fontSize="small" />}
-              etiqueta="Dirección"
-              valor={proveedor.Direccion}
-            />
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Typography
-            variant="subtitle1"
-            sx={{
-              fontWeight: 700,
-              color: "#1e293b",
-              mb: 1.5,
-              textAlign: "left",
-            }}
-          >
-            Información bancaria
-          </Typography>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-              gap: 1.5,
-            }}
-          >
-            <CampoDetalle
-              icono={<AccountBalanceIcon fontSize="small" />}
-              etiqueta="Banco"
-              valor={proveedor.NombreBanco}
-            />
-            <CampoDetalle
-              icono={<AccountBalanceIcon fontSize="small" />}
-              etiqueta="Cuenta corriente"
-              valor={proveedor.CuentaCorriente}
-            />
-          </Box>
+      <Box>
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 700,
+            color: "#1e293b",
+            mb: 1.5,
+            textAlign: "left",
+          }}
+        >
+          Información general
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            gap: 1.5,
+            mb: 3,
+          }}
+        >
+          <CampoDetalle
+            icono={<BusinessIcon fontSize="small" />}
+            etiqueta="Código"
+            valor={proveedor.CodigoProveedor}
+          />
+          <CampoDetalle
+            icono={<BusinessIcon fontSize="small" />}
+            etiqueta="Nombre"
+            valor={proveedor.NombreProveedor}
+          />
+          <CampoDetalle
+            icono={<CategoryIcon fontSize="small" />}
+            etiqueta="Categoría"
+            valor={proveedor.Categoria}
+          />
+          <CampoDetalle
+            icono={<PaymentsIcon fontSize="small" />}
+            etiqueta="Días de gracia"
+            valor={proveedor.DiasGracia}
+          />
         </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 700,
+            color: "#1e293b",
+            mb: 1.5,
+            textAlign: "left",
+          }}
+        >
+          Información de contacto
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            gap: 1.5,
+            mb: 3,
+          }}
+        >
+          <CampoDetalle
+            icono={<PersonIcon fontSize="small" />}
+            etiqueta="Contacto primario"
+            valor={proveedor.ContactoPrimario}
+          />
+          <CampoDetalle
+            icono={<PersonIcon fontSize="small" />}
+            etiqueta="Contacto alternativo"
+            valor={proveedor.ContactoAlternativo}
+          />
+          <CampoDetalle
+            icono={<PhoneIcon fontSize="small" />}
+            etiqueta="Teléfono"
+            valor={proveedor.Telefono}
+          />
+          <CampoDetalle
+            icono={<PhoneIcon fontSize="small" />}
+            etiqueta="Fax"
+            valor={proveedor.Fax}
+          />
+          <CampoDetalle
+            icono={<LanguageIcon fontSize="small" />}
+            etiqueta="Sitio web"
+            valor={
+              proveedor.SitioWeb ? (
+                <Link
+                  href={proveedor.SitioWeb}
+                  target="_blank"
+                  rel="noreferrer"
+                  underline="hover"
+                >
+                  {proveedor.SitioWeb}
+                </Link>
+              ) : null
+            }
+          />
+        </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 700,
+            color: "#1e293b",
+            mb: 1.5,
+            textAlign: "left",
+          }}
+        >
+          Información de entrega
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            gap: 1.5,
+            mb: 3,
+          }}
+        >
+          <CampoDetalle
+            icono={<LocalShippingIcon fontSize="small" />}
+            etiqueta="Método de entrega"
+            valor={proveedor.MetodoEntrega}
+          />
+          <CampoDetalle
+            icono={<LocationCityIcon fontSize="small" />}
+            etiqueta="Ciudad de entrega"
+            valor={proveedor.CiudadEntrega}
+          />
+          <CampoDetalle
+            icono={<LocationCityIcon fontSize="small" />}
+            etiqueta="Código postal"
+            valor={proveedor.CodigoPostal}
+          />
+          <CampoDetalle
+            icono={<LocationCityIcon fontSize="small" />}
+            etiqueta="Dirección de entrega"
+            valor={proveedor.Direccion}
+          />
+          <CampoDetalle
+            icono={<LocationCityIcon fontSize="small" />}
+            etiqueta="Dirección postal"
+            valor={proveedor.DireccionPostal}
+          />
+        </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 700,
+            color: "#1e293b",
+            mb: 1.5,
+            textAlign: "left",
+          }}
+        >
+          Información bancaria
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            gap: 1.5,
+          }}
+        >
+          <CampoDetalle
+            icono={<AccountBalanceIcon fontSize="small" />}
+            etiqueta="Banco"
+            valor={proveedor.NombreBanco}
+          />
+          <CampoDetalle
+            icono={<AccountBalanceIcon fontSize="small" />}
+            etiqueta="Cuenta corriente"
+            valor={proveedor.CuentaCorriente}
+          />
+        </Box>
+
+        <Divider sx={{ mb: 3, mt: 3 }} />
+
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 700,
+            color: "#1e293b",
+            mb: 1.5,
+            textAlign: "left",
+          }}
+        >
+          Ubicación
+        </Typography>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+            gap: 1.5,
+          }}
+        >
+          <CampoDetalle
+            icono={<LocationOnIcon fontSize="small" />}
+            etiqueta="Coordenadas"
+            valor={
+              proveedor.Latitud != null && proveedor.Longitud != null
+                ? `${proveedor.Latitud}, ${proveedor.Longitud}`
+                : "Coordenadas no disponibles"
+            }
+          />
+        </Box>
+        <MapaUbicacion
+          latitud={proveedor.Latitud}
+          longitud={proveedor.Longitud}
+          titulo="Mapa de ubicación del proveedor"
+          alto={300}
+          sx={{ mt: 1.5 }}
+        />
+      </Box>
     </ModalInterfazBase>
   );
 }

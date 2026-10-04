@@ -2,7 +2,11 @@ import { TablePagination } from "@mui/material";
 
 // La función se exporta para que los módulos obtengan el mismo segmento de filas.
 // eslint-disable-next-line react-refresh/only-export-components
-export const obtenerCantidadFilasVisibles = (filas, numPaginaActual, cantidadFilasPorPagina) => {
+export const obtenerCantidadFilasVisibles = (
+  filas,
+  numPaginaActual,
+  cantidadFilasPorPagina,
+) => {
   const inicio = numPaginaActual * cantidadFilasPorPagina;
   const fin = inicio + cantidadFilasPorPagina;
   return filas.slice(inicio, fin);
