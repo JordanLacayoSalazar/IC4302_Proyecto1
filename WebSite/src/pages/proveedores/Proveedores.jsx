@@ -74,6 +74,7 @@ export default function Proveedores({
   const [proveedores, setProveedores] = useState([]);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [filtroMetodoEntrega, setFiltroMetodoEntrega] = useState("");
   const [categorias, setCategorias] = useState([]);
   const [sugerenciasNombre, setSugerenciasNombre] = useState([]);
   const [opcionesFormulario, setOpcionesFormulario] = useState({
@@ -119,18 +120,21 @@ export default function Proveedores({
 
   /**
    * Consulta proveedores usando los filtros.
-   * @param {{nombre?: string, categoriaId?: string}} filtros Filtros a enviar.
+   * @param {{nombre?: string, categoriaId?: string, metodoEntregaId?: string}} filtros
+   *   Filtros a enviar.
    * @returns {Promise<void>} Actualiza la tabla y reinicia su paginación.
    */
   const fetchProveedores = async ({
     nombre = filtroNombre,
     categoriaId = filtroCategoria,
+    metodoEntregaId = filtroMetodoEntrega,
   } = {}) => {
     try {
       const datos = await solicitarJson(
         `/api/proveedores${construirQuery({
           nombre,
           categoriaId,
+          metodoEntregaId,
         })}`,
       );
       setProveedores(datos);
@@ -217,7 +221,12 @@ export default function Proveedores({
   const restaurarFiltros = async () => {
     setFiltroNombre("");
     setFiltroCategoria("");
-    await fetchProveedores({ nombre: "", categoriaId: "" });
+    setFiltroMetodoEntrega("");
+    await fetchProveedores({
+      nombre: "",
+      categoriaId: "",
+      metodoEntregaId: "",
+    });
   };
 
   /**
@@ -389,7 +398,7 @@ export default function Proveedores({
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "2fr 1fr auto auto" },
+              gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr auto auto" },
               gap: 1.5,
               alignItems: "center",
             }}
@@ -440,7 +449,7 @@ export default function Proveedores({
 
             <TextField
               select
-              label="Categoría"
+              label="Categoría del proveedor"
               size="small"
               value={filtroCategoria}
               onChange={(e) => setFiltroCategoria(e.target.value)}
@@ -453,6 +462,25 @@ export default function Proveedores({
                   value={cat.SupplierCategoryID}
                 >
                   {cat.SupplierCategoryName}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              select
+              label="Método de entrega"
+              size="small"
+              value={filtroMetodoEntrega}
+              onChange={(event) => setFiltroMetodoEntrega(event.target.value)}
+              sx={{ backgroundColor: "white", textAlign: "left" }}
+            >
+              <MenuItem value="">Todos los métodos</MenuItem>
+              {opcionesFormulario.metodosEntrega.map((metodo) => (
+                <MenuItem
+                  key={metodo.DeliveryMethodID}
+                  value={metodo.DeliveryMethodID}
+                >
+                  {metodo.DeliveryMethodName}
                 </MenuItem>
               ))}
             </TextField>

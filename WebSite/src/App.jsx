@@ -12,6 +12,7 @@ import Proveedores from "./pages/proveedores/Proveedores";
 import Clientes from "./pages/clientes/Clientes";
 import Inventario from "./pages/inventario/Inventario";
 import Reportes from "./pages/reportes/Reportes";
+import Ventas from "./pages/ventas/Ventas";
 import { verificarConexionBD } from "./components/ModuloHerramientas";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import "./App.css";
@@ -156,6 +157,9 @@ function App() {
                 • Verifique la configuración del archivo .env en la carpeta Api
                 para conectarse a SQL Server.
               </p>
+               <p>
+                • Verifique que los procedimientos almacenados estén correctamente creados en la base de datos.
+              </p>
             </div>
             <button
               className="boton-volver"
@@ -209,6 +213,16 @@ function App() {
       } else if (moduloActual === "inventarios") {
         contenidoModulo = (
           <Inventario
+            onErrorNotificacion={setErrorNotificacion}
+            onErrorOcultarModulo={(mensaje) => {
+              setErrorNotificacion("");
+              setErrorOcultarModulo(mensaje);
+            }}
+          />
+        );
+      } else if (moduloActual === "ventas") {
+        contenidoModulo = (
+          <Ventas
             onErrorNotificacion={setErrorNotificacion}
             onErrorOcultarModulo={(mensaje) => {
               setErrorNotificacion("");

@@ -4,13 +4,14 @@ GO
 
 -- ================================================================
 -- OBTENER PROVEEDORES
--- Parámetros : @NombreBusqueda, @CategoriaID
+-- Parámetros : @NombreBusqueda, @CategoriaID, @MetodoEntregaID
 -- Retorno    : proveedor, categoría y método de entrega
 -- Descripción: Filtros acumulativos y orden alfabético por proveedor.
 -- ================================================================
 CREATE OR ALTER PROCEDURE ObtenerProveedores
     @NombreBusqueda NVARCHAR(100) = NULL,
-    @CategoriaID INT = NULL
+    @CategoriaID INT = NULL,
+    @MetodoEntregaID INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -31,6 +32,7 @@ BEGIN
             OR p.SupplierName LIKE '%' + LTRIM(RTRIM(@NombreBusqueda)) + '%'
         )
         AND (@CategoriaID IS NULL OR p.SupplierCategoryID = @CategoriaID)
+        AND (@MetodoEntregaID IS NULL OR p.DeliveryMethodID = @MetodoEntregaID)
     ORDER BY p.SupplierName ASC;
 END;
 GO

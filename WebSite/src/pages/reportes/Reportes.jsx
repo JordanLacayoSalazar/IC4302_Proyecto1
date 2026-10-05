@@ -43,10 +43,16 @@ import {
 
 const FILTROS_INICIALES = {
   proveedor: "",
+  nombreCliente: "",
   categoria: "",
   subcategoria: "",
   anio: "",
+  anioInicio: "",
+  anioFin: "",
   mes: "",
+  categoriaClienteId: "",
+  categoriaProductoId: "",
+  productoId: "",
 };
 
 const MESES = [
@@ -88,6 +94,26 @@ const CONFIG_REPORTES = [
   },
 
   {
+    num: 2,
+    label: "Ventas por cliente",
+    desc: "Montos máximo, mínimo y promedio agrupados por cliente y categoría.",
+    Icono: AssessmentIcon,
+    etiqueta: "Ventas",
+    inputs: [
+      {
+        campo: "nombreCliente",
+        label: "Nombre del cliente",
+        tipo: "texto",
+      },
+      {
+        campo: "categoria",
+        label: "Categoría del cliente",
+        tipo: "texto",
+      },
+    ],
+  },
+
+  {
     num: 3,
     label: "Top 5 ganancias por producto",
     desc: "Productos con mayor ganancia por año.",
@@ -104,12 +130,90 @@ const CONFIG_REPORTES = [
   },
 
   {
+    num: 4,
+    label: "Top 5 clientes por facturas",
+    desc: "Clientes con más facturas emitidas por año y monto total facturado.",
+    Icono: AssessmentIcon,
+    etiqueta: "Ventas",
+    inputs: [
+      {
+        campo: "anioInicio",
+        label: "Año inicial",
+        source: "aniosFacturas",
+        tipo: "opciones",
+      },
+      {
+        campo: "anioFin",
+        label: "Año final",
+        source: "aniosFacturas",
+        tipo: "opciones",
+      },
+    ],
+  },
+
+  {
+    num: 5,
+    label: "Top 5 proveedores por órdenes",
+    desc: "Proveedores con más órdenes de compra por año y monto total.",
+    Icono: LocalShippingIcon,
+    etiqueta: "Compras",
+    inputs: [
+      {
+        campo: "anioInicio",
+        label: "Año inicial",
+        source: "aniosOrdenesCompra",
+        tipo: "opciones",
+      },
+      {
+        campo: "anioFin",
+        label: "Año final",
+        source: "aniosOrdenesCompra",
+        tipo: "opciones",
+      },
+    ],
+  },
+
+  {
     num: 6,
     label: "Matriz resumen de ventas",
     desc: "Resumen de ventas de categorías de productos por año.",
     Icono: BarChartIcon,
     etiqueta: "Resumen",
     inputs: [],
+  },
+
+  {
+    num: 7,
+    label: "Seguimiento de compras por cliente",
+    desc: "Resumen mensual por cliente con facturas, cantidades y montos.",
+    Icono: AssessmentIcon,
+    etiqueta: "Seguimiento",
+    inputs: [
+      {
+        campo: "anio",
+        label: "Año",
+        source: "aniosFacturas",
+        tipo: "opciones",
+      },
+      {
+        campo: "mes",
+        label: "Mes",
+        source: "meses",
+        tipo: "opciones",
+      },
+      {
+        campo: "categoria",
+        label: "Categoría de producto",
+        source: "categoriasProductos",
+        tipo: "texto",
+      },
+      {
+        campo: "subcategoria",
+        label: "Subcategoría / producto",
+        source: "subcategorias",
+        tipo: "texto",
+      },
+    ],
   },
 
   {
@@ -170,6 +274,46 @@ const CONFIG_REPORTES = [
         label: "Proveedor",
         source: "proveedores",
         tipo: "texto",
+      },
+    ],
+  },
+
+  {
+    num: 10,
+    label: "Método de envío favorito por destino",
+    desc: "Método de envío más utilizado por destino, según los filtros seleccionados.",
+    Icono: LocalShippingIcon,
+    etiqueta: "Envíos",
+    inputs: [
+      {
+        campo: "anio",
+        label: "Año",
+        source: "aniosFacturas",
+        tipo: "opciones",
+      },
+      {
+        campo: "mes",
+        label: "Mes",
+        source: "meses",
+        tipo: "opciones",
+      },
+      {
+        campo: "categoriaClienteId",
+        label: "Categoría de cliente",
+        source: "categoriasClientes",
+        tipo: "opciones",
+      },
+      {
+        campo: "categoriaProductoId",
+        label: "Categoría de producto",
+        source: "categoriasProductosIds",
+        tipo: "opciones",
+      },
+      {
+        campo: "productoId",
+        label: "Producto",
+        source: "productos",
+        tipo: "opciones",
       },
     ],
   },
@@ -482,9 +626,19 @@ export default function Reportes({
 
   const [anios, setAnios] = useState([]);
 
+  const [aniosFacturas, setAniosFacturas] = useState([]);
+
+  const [aniosOrdenesCompra, setAniosOrdenesCompra] = useState([]);
+
   const [categoriasProveedores, setCategoriasProveedores] = useState([]);
 
   const [categoriasProductos, setCategoriasProductos] = useState([]);
+
+  const [categoriasClientes, setCategoriasClientes] = useState([]);
+
+  const [categoriasProductosIds, setCategoriasProductosIds] = useState([]);
+
+  const [productos, setProductos] = useState([]);
 
   const [subcategorias, setSubcategorias] = useState([]);
 
@@ -506,19 +660,33 @@ export default function Reportes({
     const cargarCatalogos = async () => {
       try {
         const [
-          aniosData,
-          categoriasProveedorData,
-          gruposProductoData,
-          subcategoriaData,
+            aniosData,
+            categoriasProveedorData,
+            subcategoriaData,
+            opcionesReportes,
         ] = await Promise.all([
-          solicitarJson("/api/reportes/opciones/anios"),
-          solicitarJson("/api/categorias-proveedores"),
-          solicitarJson("/api/inventario/grupos"),
-          solicitarJson("/api/inventario/subcategorias"),
+            solicitarJson("/api/reportes/opciones/anios"),
+            solicitarJson("/api/categorias-proveedores"),
+            solicitarJson("/api/inventario/subcategorias"),
+            solicitarJson("/api/reportes/opciones"),
         ]);
 
         setAnios(
-          aniosData.map((item) => ({
+            aniosData.map((item) => ({
+              value: String(item.Anio),
+              label: String(item.Anio),
+            })),
+        );
+
+        setAniosFacturas(
+          opcionesReportes.aniosFacturas.map((item) => ({
+            value: String(item.Anio),
+            label: String(item.Anio),
+          })),
+        );
+
+        setAniosOrdenesCompra(
+          opcionesReportes.aniosOrdenesCompra.map((item) => ({
             value: String(item.Anio),
             label: String(item.Anio),
           })),
@@ -529,7 +697,30 @@ export default function Reportes({
         );
 
         setCategoriasProductos(
-          gruposProductoData.map((item) => item.NombreGrupo),
+          opcionesReportes.categoriasProductos.map(
+            (item) => item.NombreCategoriaProducto,
+          ),
+        );
+
+        setCategoriasClientes(
+          opcionesReportes.categoriasClientes.map((item) => ({
+            value: String(item.CustomerCategoryID),
+            label: item.CustomerCategoryName,
+          })),
+        );
+
+        setCategoriasProductosIds(
+          opcionesReportes.categoriasProductos.map((item) => ({
+            value: String(item.CategoriaProductoID),
+            label: item.NombreCategoriaProducto,
+          })),
+        );
+
+        setProductos(
+          opcionesReportes.productos.map((item) => ({
+            value: String(item.ProductoID),
+            label: item.NombreProducto,
+          })),
         );
 
         setSubcategorias(subcategoriaData.map((item) => item.Subcategoria));
@@ -628,14 +819,35 @@ export default function Reportes({
       return;
     }
 
-    const aniosDisponibles = new Set(anios.map((item) => String(item.value)));
-
-    const anioInvalido =
-      filtros.anio && !aniosDisponibles.has(String(filtros.anio));
+    const filtrosAnio = reporteActual.inputs.filter((input) =>
+      ["anio", "anioInicio", "anioFin"].includes(input.campo),
+    );
+    const anioInvalido = filtrosAnio.some((input) => {
+      const valor = filtros[input.campo];
+      const opcionesAnios = obtenerOpciones(input.source);
+      return (
+        valor &&
+        !opcionesAnios.some((opcion) => String(opcion.value) === String(valor))
+      );
+    });
 
     if (anioInvalido) {
       const error = new Error(
-        "Selecciona un año válido presente en la base de datos.",
+        "Selecciona años válidos presentes en los datos del reporte.",
+      );
+
+      mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
+
+      return;
+    }
+
+    if (
+      filtros.anioInicio &&
+      filtros.anioFin &&
+      Number(filtros.anioInicio) > Number(filtros.anioFin)
+    ) {
+      const error = new Error(
+        "El año inicial no puede ser mayor que el año final.",
       );
 
       mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
@@ -693,9 +905,14 @@ export default function Reportes({
   const obtenerOpciones = (source) => {
     const fuentes = {
       anios,
+      aniosFacturas,
+      aniosOrdenesCompra,
       meses: MESES,
       categoriasProveedores,
       categoriasProductos,
+      categoriasClientes,
+      categoriasProductosIds,
+      productos,
       subcategorias,
       proveedores: sugerenciasProveedores,
     };

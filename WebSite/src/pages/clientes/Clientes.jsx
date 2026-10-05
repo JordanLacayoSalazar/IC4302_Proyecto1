@@ -4,6 +4,7 @@ import {
   Button,
   IconButton,
   InputAdornment,
+  MenuItem,
   Paper,
   Stack,
   Table,
@@ -30,12 +31,21 @@ import { API_URL, mostrarError } from "../../components/ModuloHerramientas";
 import ModalFormularioCliente from "./ModalFormularioCliente";
 import ModalDetallesCliente from "./ModalDetallesCliente";
 
+/**
+ * Renderiza el módulo de clientes, su tabla y sus formularios.
+ * @param {object} props Manejadores de notificaciones y control del módulo.
+ * @param {Function} props.onErrorNotificacion Notifica errores al usuario.
+ * @param {Function} props.onErrorOcultarModulo Oculta el módulo si el error lo requiere.
+ * @returns {JSX.Element} Interfaz de gestión de clientes.
+ */
 export default function Clientes({
   onErrorNotificacion,
   onErrorOcultarModulo,
 }) {
   const [clientes, setClientes] = useState([]);
   const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroCategoria, setFiltroCategoria] = useState("");
+  const [filtroMetodoEntrega, setFiltroMetodoEntrega] = useState("");
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [detalleAbierto, setDetalleAbierto] = useState(false);
   const [modalFormularioAbierto, setModalFormularioAbierto] = useState(false);
@@ -52,10 +62,23 @@ export default function Clientes({
     cantidadFilasPorPagina,
   );
 
+  /**
+   * Consulta clientes con los filtros seleccionados y vuelve a la primera página.
+   * @param {string} [nombre=""] Texto opcional para filtrar clientes.
+   * @param {string} [categoria=""] Categoría seleccionada.
+   * @param {string} [metodoEntrega=""] Método de entrega seleccionado.
+   * @returns {Promise<void>} Completa la solicitud y actualiza el estado.
+   */
   const fetchClientes = useCallback(
-    async (nombre = filtroNombre) => {
+    async (
+      nombre = "",
+      categoria = "",
+      metodoEntrega = "",
+    ) => {
       const parametros = new URLSearchParams();
       if (nombre.trim()) parametros.set("nombre", nombre.trim());
+      if (categoria) parametros.set("categoria", categoria);
+      if (metodoEntrega) parametros.set("metodoEntrega", metodoEntrega);
 
       try {
         const respuesta = await fetch(
@@ -83,9 +106,13 @@ export default function Clientes({
         mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
       }
     },
-    [filtroNombre, onErrorNotificacion, onErrorOcultarModulo],
+    [onErrorNotificacion, onErrorOcultarModulo],
   );
 
+  /**
+   * Carga los catálogos para los selectores del formulario de clientes.
+   * @returns {Promise<void>} Actualiza el estado de opciones del formulario.
+   */
   const fetchOpcionesFormulario = useCallback(async () => {
     try {
       const respuesta = await fetch(`${API_URL}/api/opciones-clientes`);
@@ -107,6 +134,7 @@ export default function Clientes({
     }
   }, [onErrorNotificacion, onErrorOcultarModulo]);
 
+  /** Abre el formulario vacío para registrar un cliente nuevo. */
   const abrirFormularioNuevo = () => {
     setModoEdicion(false);
     setClienteIdEdicion(null);
@@ -114,6 +142,11 @@ export default function Clientes({
     setModalFormularioAbierto(true);
   };
 
+  /**
+   * Obtiene los datos del cliente y abre el formulario en modo edición.
+   * @param {object} cliente Fila del cliente, con CustomerID.
+   * @returns {Promise<void>} Carga el formulario o notifica el error.
+   */
   const abrirFormularioEdicion = async (cliente) => {
     try {
       const respuesta = await fetch(
@@ -167,6 +200,11 @@ export default function Clientes({
     }
   };
 
+  /**
+   * Actualiza un campo del formulario y convierte IDs y valores numéricos.
+   * @param {import('react').ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} evento
+   *   Evento de cambio del campo.
+   */
   const manejarCambioFormulario = (evento) => {
     let valor = evento.target.value;
     const camposId = [
@@ -197,6 +235,11 @@ export default function Clientes({
     }));
   };
 
+  /**
+   * Guarda las coordenadas capturadas para la ubicación de entrega.
+   * @param {number|null} latitud Latitud seleccionada.
+   * @param {number|null} longitud Longitud seleccionada.
+   */
   const manejarUbicacionCapturada = (latitud, longitud) => {
     setFormData((datosAnteriores) => ({
       ...datosAnteriores,
@@ -205,10 +248,19 @@ export default function Clientes({
     }));
   };
 
+  /**
+   * Crea o actualiza el cliente y vuelve a cargar la lista.
+   * @returns {Promise<void>} Completa el guardado y actualiza la interfaz.
+   */
   const guardarCliente = async () => {
     const url = modoEdicion
       ? `${API_URL}/api/clientes/${clienteIdEdicion}`
       : `${API_URL}/api/clientes`;
+    /**
+     * Separa una dirección multilínea en sus dos campos de almacenamiento.
+     * @param {string|null|undefined} direccion Dirección escrita en el formulario.
+     * @returns {{linea1: string|null, linea2: string|null}} Líneas de dirección.
+     */
     const separarDireccion = (direccion) => {
       const lineas = String(direccion ?? "").split(/\r?\n/);
       const direccionVacia = lineas.every((linea) => !linea.trim());
@@ -247,13 +299,18 @@ export default function Clientes({
       }
 
       setModalFormularioAbierto(false);
-      await fetchClientes();
+      await fetchClientes(filtroNombre, filtroCategoria, filtroMetodoEntrega);
     } catch (error) {
       console.error("Error al guardar cliente:", error);
       mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
     }
   };
 
+  /**
+   * Solicita confirmación y elimina el cliente seleccionado.
+   * @param {number|string} id Identificador del cliente.
+   * @returns {Promise<void>} Completa la eliminación y recarga la lista.
+   */
   const eliminarCliente = async (id) => {
     if (!window.confirm("¿Está seguro de que desea eliminar este cliente?")) {
       return;
@@ -273,7 +330,7 @@ export default function Clientes({
         throw error;
       }
 
-      await fetchClientes();
+      await fetchClientes(filtroNombre, filtroCategoria, filtroMetodoEntrega);
     } catch (error) {
       console.error("Error al eliminar cliente:", error);
       mostrarError(error, onErrorNotificacion, onErrorOcultarModulo);
@@ -289,11 +346,19 @@ export default function Clientes({
     return () => window.clearTimeout(temporizador);
   }, [fetchClientes, fetchOpcionesFormulario]);
 
+  /** Limpia los tres filtros y vuelve a cargar todos los clientes. */
   const restaurarFiltros = () => {
     setFiltroNombre("");
-    fetchClientes("");
+    setFiltroCategoria("");
+    setFiltroMetodoEntrega("");
+    fetchClientes("", "", "");
   };
 
+  /**
+   * Carga y abre el modal con el detalle del cliente indicado.
+   * @param {number|string} id Identificador del cliente.
+   * @returns {Promise<void>} Abre el detalle o muestra un error.
+   */
   const abrirDetalle = async (id) => {
     try {
       const respuesta = await fetch(`${API_URL}/api/clientes/${id}`);
@@ -415,7 +480,7 @@ export default function Clientes({
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "2fr auto auto" },
+              gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr auto auto" },
               gap: 1.5,
               alignItems: "center",
             }}
@@ -426,7 +491,13 @@ export default function Clientes({
               value={filtroNombre}
               onChange={(event) => setFiltroNombre(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Enter") fetchClientes();
+                if (event.key === "Enter") {
+                  fetchClientes(
+                    filtroNombre,
+                    filtroCategoria,
+                    filtroMetodoEntrega,
+                  );
+                }
               }}
               fullWidth
               slotProps={{
@@ -440,10 +511,52 @@ export default function Clientes({
               }}
               sx={{ backgroundColor: "white" }}
             />
+            <TextField
+              select
+              label="Categoría del cliente"
+              size="small"
+              value={filtroCategoria}
+              onChange={(event) => setFiltroCategoria(event.target.value)}
+              sx={{ backgroundColor: "white", textAlign: "left" }}
+            >
+              <MenuItem value="">Todas las categorías</MenuItem>
+              {(opcionesFormulario.categorias || []).map((categoria) => (
+                <MenuItem
+                  key={categoria.CustomerCategoryID}
+                  value={categoria.CustomerCategoryName}
+                >
+                  {categoria.CustomerCategoryName}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label="Método de entrega"
+              size="small"
+              value={filtroMetodoEntrega}
+              onChange={(event) => setFiltroMetodoEntrega(event.target.value)}
+              sx={{ backgroundColor: "white", textAlign: "left" }}
+            >
+              <MenuItem value="">Todos los métodos</MenuItem>
+              {(opcionesFormulario.metodosEntrega || []).map((metodo) => (
+                <MenuItem
+                  key={metodo.DeliveryMethodID}
+                  value={metodo.DeliveryMethodName}
+                >
+                  {metodo.DeliveryMethodName}
+                </MenuItem>
+              ))}
+            </TextField>
             <Button
               variant="contained"
               startIcon={<SearchIcon />}
-              onClick={() => fetchClientes()}
+              onClick={() =>
+                fetchClientes(
+                  filtroNombre,
+                  filtroCategoria,
+                  filtroMetodoEntrega,
+                )
+              }
               sx={{
                 height: 40,
                 px: 2,

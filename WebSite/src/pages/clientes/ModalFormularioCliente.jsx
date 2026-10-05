@@ -95,6 +95,19 @@ const camposDireccion = [
   },
 ];
 
+/**
+ * Renderiza el formulario para crear o editar clientes.
+ * @param {object} props Estado del formulario, catálogos y manejadores.
+ * @param {boolean} props.abierto Indica si el modal está abierto.
+ * @param {Function} props.onClose Cierra el modal.
+ * @param {boolean} props.modoEdicion Indica si se están editando datos existentes.
+ * @param {object} props.formData Valores actuales del formulario.
+ * @param {object} [props.opciones] Catálogos para los campos relacionados.
+ * @param {Function} props.manejarCambio Actualiza el campo que cambió.
+ * @param {Function} props.manejarUbicacionCapturada Guarda las coordenadas.
+ * @param {Function} props.guardarCliente Ejecuta el guardado del cliente.
+ * @returns {JSX.Element} Modal con campos y acciones del formulario.
+ */
 export default function ModalFormularioCliente({
   abierto,
   onClose,
@@ -120,6 +133,9 @@ export default function ModalFormularioCliente({
     textoBoton = "Crear cliente";
   }
 
+  /**
+   * Valida los campos requeridos antes de delegar el guardado.
+   */
   const guardarConValidacion = () => {
     const faltaNombre = !String(formData.CustomerName ?? "").trim();
     let faltaRelacionObligatoria = false;
@@ -140,6 +156,11 @@ export default function ModalFormularioCliente({
     guardarCliente();
   };
 
+  /**
+   * Limpia el error de validación y delega el cambio del campo.
+   * @param {import('react').ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} evento
+   *   Evento de cambio del campo.
+   */
   const manejarCambioCampo = (evento) => {
     setErrorValidacion("");
     manejarCambio(evento);

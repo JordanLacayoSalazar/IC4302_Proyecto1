@@ -35,12 +35,18 @@ const getProveedores = async (req, res) => {
       "categoriaId",
       { min: 1 },
     );
+    const metodoEntregaId = leerEnteroOpcional(
+      req.query.metodoEntregaId,
+      "metodoEntregaId",
+      { min: 1 },
+    );
 
     const pool = await conectarBaseDatos();
     const result = await pool
       .request()
       .input("NombreBusqueda", sql.NVarChar(100), nombre)
       .input("CategoriaID", sql.Int, categoriaId)
+      .input("MetodoEntregaID", sql.Int, metodoEntregaId)
       .execute("ObtenerProveedores");
 
     res.json(result.recordset);

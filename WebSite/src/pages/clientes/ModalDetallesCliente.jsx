@@ -12,6 +12,11 @@ import CampoDetalle from "../../components/CampoDetalle";
 import MapaUbicacion from "../../components/MapaUbicacion";
 import ModalInterfazBase from "../../components/ModalInterfazBase";
 
+/**
+ * Normaliza una dirección web y rechaza protocolos que no sean HTTP(S).
+ * @param {string|null|undefined} sitioWeb Dirección ingresada o almacenada.
+ * @returns {string|null} URL válida o null si no se puede crear un enlace seguro.
+ */
 const obtenerEnlaceSitioWeb = (sitioWeb) => {
   if (!sitioWeb) {
     return null;
@@ -35,6 +40,14 @@ const obtenerEnlaceSitioWeb = (sitioWeb) => {
   return enlace.href;
 };
 
+/**
+ * Muestra los datos de contacto, entrega y ubicación de un cliente.
+ * @param {object} props Propiedades del modal de detalle.
+ * @param {boolean} props.abierto Indica si el modal está abierto.
+ * @param {Function} props.onClose Cierra el modal.
+ * @param {object|null} props.cliente Datos devueltos por el detalle de cliente.
+ * @returns {JSX.Element|null} Modal de detalle o null si no hay cliente.
+ */
 export default function ModalDetallesCliente({ abierto, onClose, cliente }) {
   if (!cliente) {
     return null;

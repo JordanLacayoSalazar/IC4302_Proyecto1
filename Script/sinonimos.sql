@@ -55,4 +55,10 @@ CREATE SYNONYM syn_Facturas FOR Sales.Invoices;
 
 DROP SYNONYM IF EXISTS syn_LineasFactura;
 CREATE SYNONYM syn_LineasFactura FOR Sales.InvoiceLines;
+
+DROP SYNONYM IF EXISTS syn_TransaccionesCliente;
+CREATE SYNONYM syn_TransaccionesCliente FOR Sales.CustomerTransactions;
+
+DROP SYNONYM IF EXISTS syn_TransaccionesInventario;
+CREATE SYNONYM syn_TransaccionesInventario FOR Warehouse.StockItemTransactions;
 GO
