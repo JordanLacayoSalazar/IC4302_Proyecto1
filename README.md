@@ -10,6 +10,7 @@
 ### Estado del proyecto: **Excelente**
 
 ### Enlace del video de la aplicación en ejecución:
+https://youtu.be/ckx0SERzOyQ
 
 <br>
 
